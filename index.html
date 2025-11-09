@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Datenserver</title>
+    <link rel="stylesheet" type="text/css" href="css/standartcss_pc.css" />
+    <link rel="stylesheet" type="text/css" href="css/custom_pc.css" />
+</head>
+<body>
+    <h1>Datenserver</h1>
+    <p id="pfad_anzeige"></p>
+    <div id="dateien_main_div">
+
+    </div>
+    <script>
+        var pfad_anzeige = document.getElementById("pfad_anzeige");
+        var aktueller_pfad = "";
+        var dateien_main_div = document.getElementById("dateien_main_div");
+        var img_extensions = ['jpg', 'jpeg', 'png', 'JPG', 'PNG', 'webp', 'heic', 'mp4', 'MOV', 'Mov', 'AVI', 'avi'];
+        let dateien_json;
+        let cache;
+        window.onload = async function () {
+            var response = await fetch("/default_path",{
+                method: "GET"
+            });
+            var response_json = JSON.parse(await response.text());
+            if (response.status == 500) {
+                console.error(await response_json.message);
+            } else {
+                aktueller_pfad = await response_json.message;
+                pfad_anzeige.textContent = aktueller_pfad;
+                abfrage_dateien(aktueller_pfad);
+            }
+        }
+        async function abfrage_dateien(datei_pfad) {
+            var response = await fetch("/file_path",{
+                headers:{
+                    "path":datei_pfad
+                },
+                method: "GET"
+            });
+            var response_json = await JSON.parse(await response.text());
+            if (response.status == 500) {
+                console.error(await response_json.message);
+            } else {
+                dateien_json = response_json;
+                aktueller_pfad = await response_json.path;
+                pfad_anzeige.textContent = aktueller_pfad;
+                visualisiere_dateien(await response_json);
+            }
+        }
+
+        //visualisierung der Infos "datei_json" ist ein JSON Array mit:
+        // einem Array "unterordner" und einem Array "dateien"
+        function visualisiere_dateien(datei_json){
+            dateien_main_div.innerHTML = "";
+            var ordner = datei_json.unterordner;
+            var dateien = datei_json.dateien;
+            var zähler = 0;
+            // Visualisierung der Ordner
+            ordner.forEach(element => {
+                var datei_fläche_main = document.createElement('div');
+                datei_fläche_main.id = `dir_${zähler}`;
+                datei_fläche_main.className = "datei_fläche_main";
+
+                var ordner_icon = document.createElement('img');
+                ordner_icon.className = "dateien_anzeige_icon";
+                ordner_icon.src = "img/folder.png";
+                ordner_icon.id = `ordnericon_${zähler}`;
+                datei_fläche_main.appendChild(ordner_icon);
+
+                var textfeld = document.createElement('div');
+                textfeld.id = element;
+                textfeld.textContent = element;
+                textfeld.className = "dateien_anzeige_textfeld";
+                datei_fläche_main.appendChild(textfeld);
+
+                var ordner_öffnen_button = document.createElement('button');
+                ordner_öffnen_button.id = `dateibutton_${zähler}`;
+                ordner_öffnen_button.className = "datei_anzeige_button";
+                ordner_öffnen_button.textContent = "Ordner öffnen";
+                datei_fläche_main.appendChild(ordner_öffnen_button);
+
+                dateien_main_div.appendChild(datei_fläche_main);
+                ordner_öffnen_button.addEventListener('click', function() {
+                    öffne_ordner(this.id)
+                });
+                zähler += 1;
+            });
+
+            // Visualisierung der Dateien
+            zähler = 0;
+            dateien.forEach(element => {
+                var datei_fläche_main = document.createElement('div');
+                datei_fläche_main.id = `dir_${zähler}`;
+                datei_fläche_main.className = "datei_fläche_main";
+
+                var re = /(?:\.([^.]+))?$/;
+                
+                var ext = re.exec(element)[1];
+                var ordner_icon = document.createElement('img');
+                ordner_icon.className = "dateien_anzeige_icon";
+                if (img_extensions.includes(ext)) {
+                    lade_vorschau(aktueller_pfad,element).then(url => {
+                        ordner_icon.src = url;
+                    })
+                    .catch(error => {
+                        console.error(error);
+                    });;
+                } else {
+                    ordner_icon.src = "img/sheet.png";
+                }
+                //ordner_icon.loading ="lazy";
+                ordner_icon.id = `dateiicon_${zähler}`;
+                datei_fläche_main.appendChild(ordner_icon);
+
+                var textfeld = document.createElement('div');
+                textfeld.id = element;
+                textfeld.textContent = element;
+                textfeld.className = "dateien_anzeige_textfeld";
+                datei_fläche_main.appendChild(textfeld);
+
+                var ordner_öffnen_button = document.createElement('button');
+                ordner_öffnen_button.id = `dateibutton_${zähler}`;
+                ordner_öffnen_button.className = "datei_anzeige_button";
+                ordner_öffnen_button.textContent = "Datei öffnen";
+                datei_fläche_main.appendChild(ordner_öffnen_button);
+
+                dateien_main_div.appendChild(datei_fläche_main);
+                ordner_öffnen_button.addEventListener('click', function() {
+                    öffne_datei(this.id);
+                });
+                zähler += 1;
+            });
+        }
+
+        function öffne_ordner(ordner_button_id) {
+            var ordner_button = ordner_button_id.replace('dateibutton_','');
+            var ordner = dateien_json.unterordner[ordner_button];
+            abfrage_dateien(`${aktueller_pfad}/${ordner}`);
+        }
+
+        async function öffne_datei(datei_button_id) {
+            var dateien_index = dateien_json.dateien;
+            var index = datei_button_id.replace('dateibutton_','');
+            var datei = dateien_index[index];
+            var datei_pfad = `${aktueller_pfad}/${datei}`;
+            console.log(datei_pfad);
+            var response = await fetch("/lade_datei",{
+                headers:{
+                    "path": datei_pfad,
+                    "datei_name": datei
+                },
+                method: "GET"
+            });
+
+            if (response.status == 500) {
+                console.error(response.message);
+                return;
+            }
+
+            var response_blob = await response.blob();
+            var url = await URL.createObjectURL(response_blob);
+            window.open(url, '_blank');
+        }
+
+        async function lade_vorschau(pfad, datei) {
+            var datei_pfad = `${pfad}/${datei}`;
+            var response = await fetch("/vorschau",{
+                headers:{
+                    "path": datei_pfad
+                },
+                method: "GET"
+            });
+            if (response.status == 500) {
+                var response_json = await JSON.parse(await response.text());
+                console.error(await response_json.message);
+            } else {
+                var response_blob = await response.blob();
+                var url = await URL.createObjectURL(await response_blob);
+                return await url;
+            }
+        }
+    </script>
+</body>
+</html>

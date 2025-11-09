@@ -1,0 +1,28 @@
+{
+  "name": "datenserver_v2",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "archiver": "^7.0.1",
+    "cluster": "^0.7.7",
+    "cors": "^2.8.5",
+    "express": "^4.21.1",
+    "fs": "^0.0.1-security",
+    "heic-convert": "^2.1.0",
+    "mime": "^4.0.4",
+    "multer": "^1.4.5-lts.1",
+    "os": "^0.1.2",
+    "path": "^0.12.7",
+    "sharp": "^0.33.5",
+    "thumbsupply": "^0.4.0"
+  },
+  "type": "module"
+}
