@@ -1,0 +1,1202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel = "icon" href ="/icon.png" type = "image/x-icon">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DUC - Chatte und lade Dateien hoch</title>
+</head>
+<style>
+    body{
+        background-color: rgb(90, 150, 0);
+        color: white;
+    }
+    h1{
+        font-size: 40px;
+        text-decoration: underline;
+
+    }
+    div{
+        width: 75%;
+        border: 2px solid black;
+        background-color: gray;
+        border-radius: 10px;
+        padding: 10px;
+    }
+    input{
+        border-radius: 5px;
+        border: 1px solid black;
+    }
+    button{
+        border-radius: 5px;
+        border: 2px solid black;
+        /*background-color: green;*/
+        color: white;
+        background: radial-gradient(circle, rgb(0, 192, 0), green, rgb(0, 73, 0)); /* Radialer Farbverlauf */
+        cursor: pointer;
+        transition: 0.25s;
+    }
+    button:hover{
+        filter: brightness(1.2);
+        border: 2px solid white;
+        color: black;
+        background: radial-gradient(circle, rgb(0, 192, 0), rgb(0, 192, 0), rgb(0, 73, 0));
+    }
+    textarea{
+        border-radius: 10px;
+        border: 2px solid black;
+    }
+    img{
+        transition: 0.25s;
+    }
+    .bilder_div{
+        width: 250px;
+        background-color: rgb(189, 189, 189);
+        display: inline-block;
+        transition: 2s;
+    }
+    #dateien_anzeige, #upload, #einstellungen, #chat_div{
+        display: none;
+    }
+    .blaue_buttons{
+        background: radial-gradient(circle, rgb(0, 147, 192), rgb(0, 119, 128), rgb(0, 64, 73));
+    }
+    .blaue_buttons:hover{
+        color: white;
+        background: radial-gradient(circle, rgb(0, 147, 192), rgb(0, 147, 192), rgb(0, 64, 73));
+    }
+    .rote_buttons{
+        background: radial-gradient(circle, rgb(192, 0, 0), rgb(128, 0, 0), rgb(73, 0, 0)); /* Radialer Farbverlauf */
+    }
+    .rote_buttons:hover{
+        color: white;
+        background: radial-gradient(circle, rgb(192, 0, 0), rgb(192, 0, 0), rgb(73, 0, 0));
+    }
+    .text_oberdiv{
+        background-color: rgb(22, 77, 0);
+        width: 90%;
+    }
+    .profilbilder_chat{
+        height: 50px;
+        max-width: 200px;
+        border-radius: 50%;
+        border: 1px black;
+    }
+    .textdivs{
+        background-color: rgb(28, 100, 0);
+        width: 90%;
+    }
+    .userdivs{
+        width: 40%;
+        padding: 5px;
+        left: 0px;
+        display: inline-block;
+    }
+    .datumsdivs{
+        width: 40%;
+        padding: 5px;
+        right: 0px;
+        display: inline-block;
+    }
+    .textimages{
+        height: 200px;
+    }
+    .useranzeige_maindiv{
+        width: 25%;
+        right: 0px;
+        top: 0px;
+        z-index: 6;
+        position: fixed;
+        display: none;
+    }
+    .bio_div_anderenutzer{
+        width: 90%;
+        padding: 5px;
+    }
+    .dateiendung_text{
+        font-size: 60px;
+        color: rgb(0, 59, 13);
+        text-decoration: none;
+        text-align: center;
+        text-transform: uppercase;
+        text-shadow: 5px 5px 5px rgb(86, 114, 85);
+    }
+    .dateien_img{
+        width: 200px;
+        cursor: pointer;
+    }
+    #anmelde_form{
+        animation-name: zoom;
+        animation-duration: 0.5s;
+        animation-timing-function: ease-in;
+    }
+    #message{
+        opacity: 0;
+        animation-name: einblenden;
+        animation-duration: 1s;
+        animation-delay: 1s;
+    }
+    #bio_text{
+        min-width: 25%;
+        max-width: 90%;
+        width: 50%;
+        min-height: 200px;
+        max-height: 500px;
+        height: 200px;
+    }
+    #chat_div{
+        overflow-y: scroll;
+    }
+    #chat_oberdiv{
+        max-height: 400px;
+        overflow-y: scroll;
+        transition: 0.5s;
+    }
+    #chat_nachricht_senden_text{
+        width: 60%;
+    }
+    #chat_nachricht_senden_form, #chat_scließen_button{
+        display: none;
+    }
+    #ladekreis{
+        width: 160px;
+        height: 90px;
+    }
+    #ladebalken{
+        position: fixed;
+        top: 0px;
+        left: 0px;
+        width: 0px;
+        display: none;
+        background-color: rgb(0, 255, 0);
+        border: 0px;
+        padding: 0px;
+        height: 20px;
+    }
+    #profilbild{
+        border-radius: 50%;
+        border: 1px solid black;
+    }
+    #profilbild:hover{
+       cursor: pointer;
+    }
+    #vollbild_div{
+        position: fixed;
+        z-index: 29;
+        width: 100%;
+        height: 100%;
+        left: 0px;
+        top: 0px;
+        border-radius: 0px;
+        border: 0px;
+        background-color: rgba(0, 0, 0, 0.623);
+        display: none;
+        cursor: pointer;
+    }
+    :root{
+        --höhe_chat: 0;
+    }
+    @keyframes ladebalken {
+        from{width: 0px;}
+        to{width: 100%;}
+    }
+    @keyframes einblenden_chat{
+        from{height: 0px;}
+        to{height: var(--höhe_chat);}
+    }
+    @keyframes ausblenden_chat{
+        from{height: var(--höhe_chat);}
+        to{height: 0px;}
+    }
+    @keyframes chat_div_an_rand {
+        0%{width: 75%; height: auto;}
+        1%{position: fixed; z-index: 5;}
+        100%{width: 40%; height: 90%; position: fixed; top: 0px; right: 0px; z-index: 5;}
+    }
+    @keyframes chat_div_von_rand {
+        0%{width: 40%; height: 90%; position: fixed; top: 0px; right: 0px;z-index: 5;}
+        99%{position: relative;}
+        100%{width: 75%; height: auto; position: relative; z-index: 0;}
+    }
+    @keyframes einblenden{
+        from{opacity: 0;}
+        to{opacity: 1;}
+    }
+    @keyframes ausblenden{
+        from{opacity: 1;}
+        to{opacity: 0;}
+    }
+    @keyframes zoom {
+        from {opacity: 0; scale: 0.2; left: 200px; bottom: 0px; position: fixed;}
+        to {opacity: 1; scale: 1; left: 0px; bottom: 100%;position: relative;}
+    }
+    @keyframes zoom_to_100 {
+        from{position: fixed; z-index: 30; filter: blur(0px);border-radius: 0px; border: 0px;}
+        to{position: fixed; left: 0px; top: 0px; height: 100%; border-radius: 0px; border: 0px;z-index: 30; filter: blur(10px);}
+    }
+</style>
+<body>
+    <h1 id="titel">Melde dich an:</h1>
+    <div id="anmelde_form">
+    <p>
+        <label>
+            <h2>Benutznername:</h2>
+            <input type="text" id="benutzername_eingabe">
+        </label>
+        <label>
+            <h2>Passwort:</h2>
+            <input type="password" id="passwort_eingabe">
+        </label><p>
+        <label>
+            <h2>Emailadresse(nur bei registrierung):</h2>
+            <input type="text" id="email_eingabe">
+        </label><p>
+        <button onclick="registrieren()">Registrieren</button>
+        <button onclick="anmelden()" id="anmelden">Anmelden</button></p></p>
+    </div>
+    <div id="message"></div>
+    <div id="einstellungen">
+        <h2>Einstellungen:</h2><hr>
+        <h3>Profilbild:</h3>
+        <img src="" id="profilbild" width="200px" onclick="vergrößern(this.id, this.src)">
+        <form id="pb_upload" enctype="multipart/form-data">
+            <input type="file" name="file" id="fileInput_pb" accept=".png, .jpg, .webp">
+            <button onclick="upload_pb()">Hochladen</button>
+        </form>
+        <button class="rote_buttons" onclick="lösche_pb()">Lösche Profilbild</button><hr>
+        <h3>Schreib etwas &uuml;ber dich:</h3>
+        <textarea id="bio_text" maxlength="512"></textarea><br>
+        <button id="bio_speichern" onclick="bio_senden()">Speichen</button><br>
+        <button onclick="nutzerdaten_neuladen()">Neuladen</button>
+    </div>
+    <div id="archiv">
+        <button id="archiv_button">Archiv</button>
+    </div>
+    <div id="chat_div">
+        <button onclick="an_rand('chat_div')" id="an_rand_button">->|</button>
+        <h2>Chat:</h2>
+        <h2>Neuen Chat erstellen:</h2>
+        <label>
+            <b>Nutzer auswählen:</b>
+            <select id="neuer_chat_nutzer">
+            </select>
+        </label><button id="neuer_chat_button" onclick="erstelle_chat()">Neuen Chat erstellen</button><hr>
+        <div id="chat_oberdiv">
+        </div>
+        <form id="chat_nachricht_senden_form">
+            <input type="file" id="chat_senden_datei">
+            <input type="text" id="chat_nachricht_senden_text">
+            <button type="submit" onclick="nachricht_senden()" id="chat_nachricht_senden_button">Nachricht senden</button>
+        </form><hr>
+        <button id="chat_öffnen_button" onclick="global_chat_öffnen()">Chat öffnen</button>
+        <button onclick="schließe_chat()" id="chat_scließen_button">Chat schließen</button>
+        <button id="scrollen_beenden_button" class="blaue_buttons" onclick="scrollen_beenden()">Automatisches scrollen beenden</button><br>
+        <select id="chat_auswahl" onchange="ändere_chat()">
+            <option id="global" value="global">Gloablchat</option>
+        </select><hr>
+        <p><h3>Status:</h3> <b id="chat_status"></b></p>
+    </div>
+    <div id="upload">
+        <h2>Dateien hochladen:</h2>
+        <form id="fileUploadForm" enctype="multipart/form-data">
+            <input type="file" name="file" id="fileInput" multiple>
+            <button onclick="upload_img()">Hochladen</button>
+        </form><button onclick="lade_dateien()">Neuladen</button>
+        <button id="löschen" class="rote_buttons" onclick="alles_löschen()">Alles löschen</button><br>
+        <button onclick="alles_downloaden()" id="herunterladen_button">Alles herunterladen</button>
+    </div>
+    <div id="dateien_anzeige">
+    </div>
+    <div id="ladebalken"></div>
+    <div id="useranzeige_maindiv1" class="useranzeige_maindiv">
+        <img id="useranzeige_profilbild" class="profilbilder_chat">
+        <div id="useranzeige_nutzername" class="userdivs"></div>
+        <button class="rote_buttons" onclick="document.getElementById('useranzeige_maindiv1').style.display = '';">X</button>
+        <div id="useranzeige_bio" class="bio_div_anderenutzer"></div>
+    </div>
+    <div id="vollbild_div" onclick="vergrößern(vollbild_id)"></div>
+    <script src="apis/mitteilungen.js"></script>
+    <script>
+        var vollbild = 0;
+        var vollbild_id = "";
+        var vollbild_div = document.getElementById("vollbild_div");
+        const fileInput = document.getElementById('fileInput');
+        const fileUploadForm = document.getElementById('fileUploadForm');
+        const messageDiv = document.getElementById('message');
+        var profilbild_input = document.getElementById("fileInput_pb");
+        var titel = document.getElementById("titel");
+        var benutzername_eingabe = document.getElementById("benutzername_eingabe");
+        var passwort_eingabe = document.getElementById("passwort_eingabe");
+        var email_eingabe = document.getElementById("email_eingabe");
+        var anmelde_form = document.getElementById("anmelde_form");
+        var upload_form = document.getElementById("upload");
+        var dateien_anzeige = document.getElementById("dateien_anzeige");
+        var profilbild = document.getElementById("profilbild");
+        var einstellungen_div = document.getElementById("einstellungen");
+        var chat_div = document.getElementById("chat_div");
+        var chat_oberdiv = document.getElementById("chat_oberdiv");
+        var chat_nachricht_senden_form = document.getElementById("chat_nachricht_senden_form");
+        var chat_nachricht_senden_text = document.getElementById("chat_nachricht_senden_text");
+        var chat_nachricht_senden_button = document.getElementById("chat_nachricht_senden_button");
+        var chat_senden_datei = document.getElementById("chat_senden_datei");
+        var chat_scließen_button = document.getElementById("chat_scließen_button");
+        var chat_öffnen_button = document.getElementById("chat_öffnen_button");
+        var chat_status = document.getElementById("chat_status");
+        var chat = document.getElementById("chat_auswahl").value;
+        var an_rand_button = document.getElementById("an_rand_button");
+        var neuer_chat_nutzer = document.getElementById('neuer_chat_nutzer').value;
+        var herunterladen_button = document.getElementById("herunterladen_button");
+        var benutzername = "";
+        var passwort = "";
+        var zähler = 0;
+        var user_key = 0;
+        var chat_offen = 0;
+        var user_scrolled = false;
+        var bio_text = document.getElementById("bio_text");
+        var scrollen_beenden_button = document.getElementById("scrollen_beenden_button");
+        var chat_abfrage_intervall = "";
+        var nachricht_cooldown = 0;
+        var ladebalken = document.getElementById("ladebalken");
+        var ladekreis = '<img alt="ladekreis" id="ladekreis" src="https://cdn.discordapp.com/attachments/1078665876582178907/1156947163385974804/loading-29.gif?ex=6516d282&is=65158102&hm=2288a8b8047c9437ae53d0f75d585c319c001fbed7d1eeaa5b6857746c59a65e&">';
+        var audio = ['mp3','wav','ogg'];
+        var video = ['webm','mp4'];
+        var bilder = ['png','jpg','jpeg','webp','JPG','gif'];
+        let chatdata_abgleich;
+        window.onload = function() {
+            chat_oberdiv.style.display = "none";
+            var token_cookie = decodeURIComponent(document.cookie);
+            if (token_cookie.includes('token=')) {
+                var cookiewert = document.cookie.match('(^|;)\\s*' + 'token' + '\\s*=\\s*([^;]+)');
+                cookiewert = cookiewert ? cookiewert.pop() : '';
+                messageDiv.textContent = "Anmeldedaten richtig";
+                user_key = cookiewert;
+                alles_einblenden()
+                abfrage_chats();
+                lade_nutzernamen();
+                nutzerdaten_neuladen();
+                setTimeout(() => {
+                    lade_dateien();
+                }, 1000);
+            }
+            setTimeout(() => {
+                messageDiv.style.opacity = 1;
+            }, 1500);
+            setInterval(() => {
+                abfrage_chats();
+            }, 20000);
+        }
+        async function anmelden() {
+                var login = await fetch("/login",{
+                    headers:{
+                        key: "server_connection01",
+                        username: benutzername_eingabe.value,
+                        password: passwort_eingabe.value
+                    },
+                    method: "POST"
+                });
+                var login_text = await login.text();
+                //console.log(login_text)
+                var login_json = await JSON.parse(await login_text);
+                if (await login_json.message == "Erfolgreich angemeldet") {
+                    var day = new Date();
+                    day.setTime(day.getTime() + (7 * 24 * 60 * 60 * 1000))
+                    day = day.toUTCString();
+                    messageDiv.textContent = "Anmeldedaten richtig";
+                    benutzername = benutzername_eingabe.value;
+                    passwort = passwort_eingabe.value;
+                    user_key = login_json.user_key;
+                    console.log("Cookie wird erstellt!")
+                    document.cookie = `token=${login_json.user_key}; expires=${day}; path=/; SameSite=None; Secure`;
+                    console.log(document.cookie," =? ", `token=${login_json.user_key}; expires=${day}; path=/`);
+                    if (login_json.profilebild !== undefined) {
+                        profilbild.src = login_json.profilebild;
+                    }
+                    alles_einblenden();
+                    abfrage_chats();
+                    lade_nutzernamen();
+                    nutzerdaten_neuladen();
+                    lade_dateien();
+                    alert("Anmeldedaten richtig");
+                    return
+                } else{
+                    alert("Login inkorrekt")
+                }
+        };
+        async function alles_einblenden() {
+            anmelde_form.style.animationName = "ausblenden";
+            anmelde_form.style.animationDuration = "0.5s";
+            anmelde_form.style.animationTimingFunction = "ease-out";
+            setTimeout(() => {
+                anmelde_form.style.display = "none";
+
+                titel.textContent = "Bildergallery:";
+                upload_form.style.display = "block";
+                einstellungen_div.style.display = "block";
+                dateien_anzeige.style.display = "block";
+                chat_div.style.display = "block";
+
+                upload_form.style.opacity = 0;
+                einstellungen_div.style.opacity = 0;
+                chat_div.style.opacity = 0;
+                dateien_anzeige.style.opacity = 0;
+                einstellungen_div.style.animationName = "einblenden";
+                einstellungen_div.style.animationDuration = "1s";
+                chat_div.style.animationName = "einblenden";
+                chat_div.style.animationDuration = "1s";
+                chat_div.style.animationDelay = "0.5s";
+                upload_form.style.animationName = "einblenden";
+                upload_form.style.animationDuration = "1s";
+                upload_form.style.animationDelay = "1s";
+                dateien_anzeige.style.animationName = "einblenden";
+                dateien_anzeige.style.animationDuration = "1s";
+                dateien_anzeige.style.animationDelay = "1.5s";
+                setTimeout(() => {
+                    einstellungen_div.style.opacity = 1;
+                    setTimeout(() => {
+                        chat_div.style.opacity = 1;
+                        setTimeout(() => {
+                            upload_form.style.opacity = 1;
+                            setTimeout(() => {
+                                dateien_anzeige.style.opacity = 1;
+                            }, 500);
+                        }, 500);
+                    }, 500);
+                }, 1000);
+
+            }, 500);
+        }
+        async function registrieren() {
+            var response = await update_userdata(benutzername_eingabe.value, passwort_eingabe.value, email_eingabe.value);
+            var response_text = await response.text();
+            var response_json = JSON.parse(await response_text);
+            if (response_json.message == "Erledigt!") {
+                alert("Erfolgreich registriert!!");   
+            } else {
+                alert(response_json.message);
+            }
+        }
+        async function lade_nutzernamen() {
+            neuer_chat_nutzer = document.getElementById("neuer_chat_nutzer");
+            var ip = "/get_usernames";
+            const response = await fetch(ip,{
+                headers:{
+                    key: "server_connection01"
+                },
+                method:"GET"
+            });
+            const response_text = await response.text();
+            //console.log(await response_text);
+            const response_json = await JSON.parse(await response_text);
+            messageDiv.textContent = response_json.message;
+            var usernames = response_json.nutzernamen;
+            var profilbilder = response_json.profilbilder;
+            neuer_chat_nutzer = document.getElementById('neuer_chat_nutzer');
+            var zähler4 = 0;
+            var oldInput = neuer_chat_nutzer; 
+                var newInput = document.createElement("select"); 
+                newInput.id = oldInput.id; 
+                newInput.onchange = oldInput.onchange;
+                newInput.name = oldInput.name; 
+                newInput.style.cssText = oldInput.style.cssText;
+                //TODO: copy any other relevant attributes 
+                                                        
+                oldInput.parentNode.replaceChild(newInput, oldInput);
+                while (zähler4 <= usernames.length - 1) {
+                    var option = document.createElement('option');
+                    option.id = "nutzername" + zähler4;
+                    option.value = usernames[zähler4];
+                    option.textContent = usernames[zähler4];
+                    document.getElementById("neuer_chat_nutzer").appendChild(option);
+                    zähler4 += 1;
+                }
+        }
+        async function lade_dateien() {
+            //event.preventDefault();
+            dateien_anzeige.innerHTML = "";
+            dateien_anzeige.innerHTML = ladekreis;
+            var ip = "/get_data";
+            const response = await fetch(ip,{
+                headers:{
+                    key: "server_connection01",
+                    key1: user_key
+                },
+                method:"GET"
+            });
+            const response_text = await response.text();
+            //console.log(await response_text);
+            const response_json = await JSON.parse(await response_text);
+            dateien_anzeige.innerHTML = "";
+            var zähler2 = 0;
+            while (zähler2 <= response_json.fileLinks.length - 1) {
+                let img;
+                var button = document.createElement("button");
+                var löschen = document.createElement("button")
+                var div = document.createElement("div");
+                var br = document.createElement("br");
+                var a = document.createElement("a");
+                var dateiname = response_json.fileLinks[zähler2].replace(`/uploads/${user_key}/`, "");
+                var dateiendung_cache = dateiname.split('.');
+                var dateiendung_cache2 = dateiendung_cache.length;
+                var dateiendung = dateiendung_cache[dateiendung_cache2 - 1];
+                if (audio.includes(dateiendung)) {
+                    img = document.createElement("audio")
+                    img.controls = "true";
+                } else if(video.includes(dateiendung)) {
+                    img = document.createElement("video");
+                    img.controls = "true";
+                } else if (bilder.includes(dateiendung)){
+                    img = document.createElement("img");
+                    img.style.filter = "blur(10px)";
+                    img.className = "dateien_img";
+                    img.onload = function() {
+                        document.getElementById(this.id).style.filter = "blur(0px)";
+                    }
+                    img.onclick = function () {
+                        vergrößern(this.id);
+                    }
+                } else{
+                    console.log(dateiendung, dateiendung_cache, dateiendung_cache2, dateiname);
+                    img = document.createElement("h1");
+                    img.className = "dateiendung_text";
+                    img.textContent = dateiendung;
+                }
+                div.className = "bilder_div";
+                div.id = 'bilder_div_' + zähler2;
+                a.target = "_blank";
+                a.href = response_json.fileLinks[zähler2];
+                button.id = "button_" + zähler2;
+                button.textContent = dateiname;
+                img.id = "img_" + zähler2;
+                if (bilder.includes(dateiendung)) {
+                    img.src = response_json.fileLinks[zähler2];
+                } else if(img.nodeType !== "h1"){
+                    img.src = response_json.fileLinks[zähler2];
+                }
+                img.style.width = "200px";
+                löschen.className = "rote_buttons";
+                löschen.id = "lösche_datei_" + zähler2;
+                löschen.textContent = "lösche Datei";
+                löschen.addEventListener('click', function (params) {
+                    var id = this.id;
+                    var id_bild = id.replace("lösche_datei_", "button_");
+                    var datei = document.getElementById(id_bild);
+                    var src = datei.textContent;
+                    lösche_datei("/uploads/" + user_key + "/" + src);
+                })
+                if (img !== "") {
+                    div.appendChild(img);   
+                }
+                div.style.animationName = "einblenden";
+                div.style.animationDuration = "2s";
+                div.appendChild(br);
+                a.appendChild(button);
+                div.appendChild(a);
+                div.appendChild(löschen);
+                dateien_anzeige.appendChild(div);
+                zähler2 += 1;
+            }
+        }
+        async function update_userdata(username1, password1, email_adress) {
+            var ip = "/update_userdata";
+            const response = await fetch(ip,{
+                headers:{
+                    key: "server_connection01",
+                    username: username1,
+                    password: password1,
+                    email: email_adress
+                },
+                method:"POST"
+            });
+            return response
+        }
+        async function upload_img() {
+            event.preventDefault();
+            zähler = 0;
+            while (zähler <= fileInput.files.length - 1) {
+                var formData = new FormData();
+                formData.append('file', fileInput.files[zähler]);
+                
+                try {
+                    messageDiv.textContent = `lade datei(${fileInput.files[zähler].name}) hoch...`;
+                    const response = await fetch('/upload', {
+                        method: 'POST',
+                        headers:{
+                            key: "server_connection01",
+                            key1: user_key
+                        },
+                        body: formData
+                    });
+                
+                    if (response.ok) {
+                        const data = await response.json();
+                        messageDiv.textContent = data.message;
+                    } else {
+                        messageDiv.textContent = 'Fehler beim Hochladen der Datei.';
+                    }
+                } catch (error) {
+                    console.error('Fehler:', error);
+                    messageDiv.textContent = 'Ein unerwarteter Fehler ist aufgetreten.';
+                }
+                zähler += 1;   
+            }
+            alert(messageDiv.textContent);
+            lade_dateien();
+        }
+        async function alles_löschen() {
+            dateien_anzeige.innerHTML = ladekreis;
+            const response = await fetch('/delete_all_data', {
+                method: 'POST',
+                headers:{
+                    key: "server_connection01",
+                    key1: user_key,
+                    username: benutzername
+                },
+            });
+            var response_text = await response.text();
+            var response_json = JSON.parse(await response_text);
+            messageDiv.innerText = await response_json.message;
+            setTimeout(() => {
+                lade_dateien();
+            }, 500);
+        }
+        async function upload_pb(){
+            event.preventDefault();
+            var formData = new FormData();
+            //formData.append('file', profilbild_input.files[0]);
+            
+            try {
+                messageDiv.textContent = `Lade Datei (${profilbild_input.files[0].name}) hoch...`;
+                
+                // Skalierung des Bildes
+                const scaledBlob = await scaleImage(profilbild_input.files[0]);
+                formData.append('file',scaledBlob, profilbild_input.files[0].name.replace(/\.[^/.]+$/, ".png"));
+                
+                const response = await fetch('/upload_pf', {
+                    method: 'POST',
+                    headers:{
+                        key: "server_connection01",
+                        key1: user_key,
+                        filename: profilbild_input.files[0].name
+                    },
+                    body: formData
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    profilbild.src = data.link;
+                    messageDiv.textContent = data.message;
+                } else {
+                    messageDiv.textContent = 'Fehler beim Hochladen der Datei.';
+                }
+            } catch (error) {
+                console.error('Fehler:', error);
+                messageDiv.textContent = 'Ein unerwarteter Fehler ist aufgetreten.';
+            }
+        }
+        
+        function scaleImage(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.src = e.target.result;
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        const scaleFactor = 240 / this.width;
+                        canvas.width = 240;
+                        canvas.height = this.height * scaleFactor;
+                        ctx.drawImage(this, 0, 0, canvas.width, canvas.height);
+                        canvas.toBlob(function(blob) {
+                            resolve(blob);
+                        }, 'image/png');
+                    }
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+        async function nutzerdaten_neuladen(){
+            //event.preventDefault();
+            const response = await fetch('/get_userdata', {
+                method: 'GET',
+                headers:{
+                    key: "server_connection01",
+                    key1: user_key,
+                },
+            });
+                            
+            if (response.ok) {
+                const data = await response.json();
+                benutzername = await data.your_userdata.username;
+                //console.log(data);
+                if (data.your_userdata.profilebild !== null && data.your_userdata.profilebild !== "" && data.your_userdata.profilebild !== undefined) {
+                    profilbild.src = data.your_userdata.profilebild;
+                } else {
+                    profilbild.src = "default images/default profilepicture.png";
+                }
+                if (data.your_userdata.bio !== null && data.your_userdata.bio !== "" && data.your_userdata.bio !== undefined) {
+                    document.getElementById("bio_text").value = data.your_userdata.bio;
+                }
+                messageDiv.textContent = data.message;
+            } else {
+                messageDiv.textContent = 'Fehler beim laden der Nutzerdaten.';
+            }
+        }
+        async function lösche_datei(filepath) {
+            var response = await fetch('/delete_file',{
+                method: 'POST',
+                headers:{
+                    key: "server_connection01",
+                    file_path: filepath
+                }
+            })
+            var response_json = await JSON.parse(await response.text());
+            messageDiv.textContent = response_json.message;
+            lade_dateien();
+        }
+        async function lösche_pb() {
+            var response = await fetch('/delete_pb',{
+                method: 'POST',
+                headers:{
+                    key: "server_connection01",
+                    key1: user_key
+                }
+            })
+            var response_json = JSON.parse(await response.text());
+            messageDiv.textContent = response_json.message;
+            nutzerdaten_neuladen();
+        }
+        async function global_chat_öffnen() {
+            mitteilung("blue", "Es empfiehlt sich den Chat an den Rand anzuheften.", 5000, "30px", "200px");
+            chat_offen = 1;
+            chat = document.getElementById("chat_auswahl").value;
+            chat_nachricht_senden_form.style.display = "block";
+            chat_öffnen_button.style.display = "none";
+            chat_scließen_button.style.display = "inline";
+            chat_oberdiv.style.display = "block";
+            var response = await fetch('/load_chat',{
+                    method: 'GET',
+                    headers:{
+                        key: "server_connection01",
+                        chat
+                    }
+                })
+            var response_json = JSON.parse(await response.text());
+            messageDiv.textContent = response_json.message;
+            chat = document.getElementById("chat_auswahl").value;
+            visualisiere_chat(response_json.chat_data);
+            chat_abfrage_intervall = setInterval(() => {
+                lade_chatdata();
+            }, 2000);
+            chat_oberdiv.style.setProperty("--höhe_chat", chat_oberdiv.offsetHeight +"px")
+            chat_oberdiv.style.animationName = "einblenden_chat";
+            chat_oberdiv.style.animationDuration = "0.5s";
+        }
+        async function nachricht_senden() {
+            event.preventDefault();
+            chat_senden_datei = document.getElementById("chat_senden_datei");
+            chat = document.getElementById("chat_auswahl").value;
+            let response;
+            if (nachricht_cooldown == 0) {
+                var nachricht = chat_nachricht_senden_text.value;
+                var nachricht = nachricht;
+                if (nachricht.length >= 250) {
+                    //alert("Nachricht kann nicht gesendet werden!");
+                    mitteilung("red", `Nachricht kann nicht gesendet werden. ${nachricht.length}/250`, 5000, "30px", "200px");
+                    return
+                }
+                if (nachricht !== "") {
+                    chat_nachricht_senden_button.style.display = "none";
+                    if (chat_senden_datei.files.length > 0) {
+                        data_vorhanden = 1;
+                        var formData = new FormData();
+                        formData.append('file', chat_senden_datei.files[0]);
+                        if (nachricht !== "") {
+                            ladebalken.style.display = "block";
+                            response = await fetch('/send_message',{
+                                method: 'POST',
+                                headers:{
+                                    key: "server_connection01",
+                                    chat_: chat,
+                                    message: nachricht,
+                                    user: benutzername,
+                                    data_: data_vorhanden
+                                },
+                                body: formData
+                            })
+                        }
+                    } else {
+                        data_vorhanden = 0;
+                        if (nachricht !== "") {
+                            response = await fetch('/send_message_without_data',{
+                                method: 'POST',
+                                headers:{
+                                    key: "server_connection01",
+                                    chat_: chat,
+                                    message: nachricht,
+                                    user: benutzername,
+                                    data_: data_vorhanden
+                                }
+                            })
+                        }
+                    }
+                    var response_json = JSON.parse(await response.text());
+                    messageDiv.textContent = response_json.message;
+                    chat_nachricht_senden_text.value = "";
+                    chat_nachricht_senden_text.focus();
+                    clearFileInput('chat_senden_datei');
+                    visualisiere_chat(response_json.chat_data);
+                    nachricht_cooldown = 1;
+                    ladebalken_funktion(1000);
+                    setTimeout(() => {
+                        nachricht_cooldown = 0;
+                        chat_nachricht_senden_button.style.display = "";
+                    }, 1000);   
+                }   
+            }
+        }
+            
+        async function visualisiere_chat(chat_data) {
+            if (chat_data !== null) {
+                chatdata_abgleich = chat_data;
+                chat_oberdiv.innerHTML = "";
+                var zähler3 = 0;
+                while (zähler3 <= chat_data.length - 1) {
+                    var cache1 = chat_data[zähler3].message;
+                    var nachricht = cache1
+                    var oberdiv = document.createElement("div");
+                    var textdiv = document.createElement("div");
+                    var userdiv = document.createElement("div");
+                    var user_button = document.createElement("button");
+                    var datumdiv = document.createElement("div");
+                    var profilbild_bild = document.createElement("img");
+                    var nutzerbutton_id = {
+                        nutzername: chat_data[zähler3].user,
+                        nummer: zähler3
+                    };
+                    oberdiv.className = "text_oberdiv";
+                    oberdiv.id = "oberdiv_" + zähler3;
+                    profilbild_bild.className = "profilbilder_chat";
+                    if (chat_data[zähler3].profilepicture !== undefined) {
+                        profilbild_bild.src = chat_data[zähler3].profilepicture.replace('/low_res','');
+                    } else {
+                        profilbild_bild.src = "";
+                    }
+                    textdiv.className = "textdivs";
+                    userdiv.className = "userdivs";
+                    datumdiv.className = "datumsdivs";
+                    textdiv.textContent = chat_data[zähler3].message;
+                    user_button.textContent = chat_data[zähler3].user;
+                    datumdiv.textContent = chat_data[zähler3].time;
+                    user_button.id = zähler3;
+                    user_button.addEventListener("click", function(event) {
+                        var username__ = chatdata_abgleich[event.target.id].user;
+                        get_data_of_user(username__);
+                    });
+                    userdiv.appendChild(profilbild_bild);
+                    userdiv.appendChild(user_button);
+                    oberdiv.appendChild(userdiv);
+                    oberdiv.appendChild(datumdiv);
+                    if (chat_data[zähler3].image !== "") {
+                        var image = document.createElement("img");
+                        var image_button = document.createElement("button");
+                        var a = document.createElement("a")
+                        var br = document.createElement("br");
+                        image.className = "textimages";
+                        image.src = chat_data[zähler3].image;
+                        a.href = chat_data[zähler3].image;
+                        a.target = "_blank";
+                        image_button.textContent = "Bild vergrößern";
+                        a.appendChild(image_button);
+                        oberdiv.appendChild(image);
+                        oberdiv.appendChild(br);
+                        oberdiv.appendChild(a);
+                    } 
+                    oberdiv.appendChild(textdiv);
+                    chat_oberdiv.appendChild(oberdiv);
+                    zähler3 += 1;
+                }
+                if (user_scrolled == false) {
+                    chat_oberdiv.scrollTop = chat_oberdiv.scrollHeight;   
+                }
+            }
+        }
+        async function lade_chatdata() {
+            var response = await fetch('/get_chatdata',{
+                method: 'GET',
+                headers:{
+                    key: "server_connection01",
+                    chat_: chat
+                }
+            })
+            var response_json = JSON.parse(await response.text());
+            chat_status.textContent = response_json.message;
+            if (response_json.chat_data !== chatdata_abgleich) {
+                visualisiere_chat(response_json.chat_data);   
+            }
+        }
+        async function ladebalken_funktion(zeit) {
+            ladebalken.style.display = "block";
+            ladebalken.style.width = "0%";
+            ladebalken.style.animation = "ladebalken";
+            ladebalken.style.animationFillMode = "linear";
+            ladebalken.style.animationDuration = (zeit / 1000) + "s";
+            setTimeout(() => {
+                ladebalken.style.display = "none";
+                ladebalken.style.animation = "";
+                ladebalken.style.animationDuration = "";
+            }, zeit);
+        }
+        async function schließe_chat() {
+            clearInterval(chat_abfrage_intervall);
+            chat_oberdiv.style.setProperty("--höhe_chat", chat_oberdiv.offsetHeight +"px");
+            chat_oberdiv.style.animationName = "ausblenden_chat";
+            chat_oberdiv.style.animationDuration = "0.5s";
+            setTimeout(() => {
+                chat_oberdiv.style.height = "0px";
+                chat_oberdiv.style.display = "none";
+                chat_nachricht_senden_form.style.display = "none";
+                chat_öffnen_button.style.display = "inline";
+                chat_scließen_button.style.display = "none";
+                chat_oberdiv.style.height = "";
+            }, 460);
+        }
+        async function scrollen_beenden() {
+                if (user_scrolled) {
+                    scrollen_beenden_button.textContent = "Automatisches scrollen beenden";
+                    user_scrolled = false;
+                } else{
+                    scrollen_beenden_button.textContent = "Automatisches scrollen vortführen";
+                    user_scrolled = true;
+                }
+            }
+            async function clearFileInput(id) { 
+                var oldInput = document.getElementById(id); 
+            
+                var newInput = document.createElement("input"); 
+            
+                newInput.type = "file"; 
+                newInput.id = oldInput.id; 
+                newInput.name = oldInput.name; 
+                newInput.style.cssText = oldInput.style.cssText; 
+                //TODO: copy any other relevant attributes 
+            
+                oldInput.parentNode.replaceChild(newInput, oldInput); 
+            }
+            async function an_rand(id){
+                var div = document.getElementById(id);
+                if (an_rand_button.textContent == "->|") {
+                    div.style.animationName = "chat_div_an_rand";
+                    div.style.animationDuration = "0.5s";
+                    setTimeout(() => {
+                        div.style.zIndex = 5;
+                        div.style.position = "fixed";
+                        div.style.top = "0px";
+                        div.style.right = "0px";
+                        div.style.height = "90%";
+                        div.style.width = "40%";
+                        an_rand_button.textContent = "[]<-";
+                    }, 490);
+                } else {
+                    div.style.animationName = "chat_div_von_rand";
+                    div.style.animationDuration = "0.5s";
+                    setTimeout(() => {
+                        div.style.zIndex = "";
+                        div.style.position = "";
+                        div.style.top = "";
+                        div.style.left = "";
+                        div.style.height = "";
+                        div.style.width = "";
+                        an_rand_button.textContent = "->|";
+                    }, 490);
+                }
+            }
+            async function ändere_chat() {
+                console.log("T", document.getElementById("chat_auswahl").value)
+                var chat1 = document.getElementById("chat_auswahl").value;
+                chat = chat1;
+                var response = await fetch('/load_chat',{
+                    method: 'GET',
+                    headers:{
+                        key: "server_connection01",
+                        chat: chat1
+                    }
+                })
+                var response_json = JSON.parse(await response.text());
+                messageDiv.textContent = response_json.message;
+                visualisiere_chat(response_json.chat_data);
+            }
+            async function abfrage_chats() {
+                var chat_auswahl = document.getElementById("chat_auswahl");
+                var response = await fetch('/get_all_chats',{
+                    method: 'GET',
+                    headers:{
+                        key: "server_connection01",
+                        key1: user_key
+                    }
+                })
+                var response_json = JSON.parse(await response.text());
+                messageDiv.textContent = response_json.message;
+                //console.log(response_json.chatdata);
+                var chatdata = response_json.chatdata;
+                var zähler4 = 0;
+                var oldInput = document.getElementById("chat_auswahl"); 
+                var newInput = document.createElement("select"); 
+                newInput.id = oldInput.id; 
+                newInput.onchange = oldInput.onchange;
+                newInput.name = oldInput.name; 
+                newInput.style.cssText = oldInput.style.cssText;
+                var option1 = document.createElement("option");
+                option1.id = "gloabl";
+                option1.textContent = "Globalchat";
+                option1.value = "global";
+                newInput.appendChild(option1);
+                                                        
+                oldInput.parentNode.replaceChild(newInput, oldInput);
+                while (zähler4 <= chatdata.length - 1) {
+                    var option = document.createElement('option');
+                    option.id = "chatauswahl_" + zähler4;
+                    option.value = chatdata[zähler4];
+                    option.textContent = "Chat:" + zähler4;
+                    document.getElementById("chat_auswahl").appendChild(option);
+                    zähler4 += 1;
+                }
+                chat_auswahl = document.getElementById("chat_auswahl");
+                chat_auswahl.value = chat;
+            }
+            async function erstelle_chat(){
+                neuer_chat_nutzer = document.getElementById("neuer_chat_nutzer").value;
+                console.log(neuer_chat_nutzer);
+                var response = await fetch('/start_chat',{
+                    method: 'POST',
+                    headers:{
+                        key: "server_connection01",
+                        key1: user_key,
+                        start_user: benutzername,
+                        other_user: neuer_chat_nutzer
+                    }
+                })
+                var response_json = JSON.parse(await response.text());
+                messageDiv.textContent = response_json.message;
+                abfrage_chats();
+            }
+            async function bio_senden(){
+                var bio_speichern = document.getElementById("bio_speichern");
+                bio_speichern.style.display = "none";
+
+                bio_text = document.getElementById("bio_text").value;
+                var response = await fetch('/save_bio',{
+                    method: 'POST',
+                    headers:{
+                        'Content-Type': 'text/plain',
+                        key: "server_connection01",
+                        key1: user_key,
+                    },
+                    body: bio_text
+                });
+                var response_json = JSON.parse(await response.text());
+                messageDiv.textContent = response_json.message;
+                bio_speichern.style.display = "";
+            }
+            async function get_data_of_user(user) {
+                //console.log(user)
+                var response = await fetch('/get_custom_user',{
+                    method: 'GET',
+                    headers:{
+                        key: "server_connection01",
+                        user_: user
+                    }
+                })
+                var response_json = JSON.parse(await response.text());
+                messageDiv.textContent = response_json.message;
+                visuallisiere_nutzerdaten_anderernutzer(response_json.userdata_);
+            }
+            async function visuallisiere_nutzerdaten_anderernutzer(data) {
+                var maindiv = document.getElementById("useranzeige_maindiv1");
+                var nutzername = document.getElementById("useranzeige_nutzername");
+                var profilbild = document.getElementById("useranzeige_profilbild");
+                var bio_div = document.getElementById("useranzeige_bio");
+
+                maindiv.style.display = "block"
+                maindiv.className = "useranzeige_maindiv";
+                nutzername.className = "userdivs";
+                profilbild.className = "profilbilder_chat";
+                bio_div.className = "bio_div_anderenutzer";
+                nutzername.textContent = data.username;
+                if (data.profilbild !== undefined && data.profilbild !== null) {
+                    profilbild.src = data.profilbild;
+                }
+                bio_div.innerText = data.bio;
+            }
+            async function vergrößern(id, link) {
+                var object = document.getElementById(id);
+                var object_width = object.offsetWidth;
+                var object_height = object.offsetHeight;
+                var scale = object_width / object_height;
+                var screen_height = window.innerHeight;
+
+                if (vollbild == 1) {
+                    vollbild = 0;
+                    document.body.style.overflow = "";
+                    object.style.position = "";
+                    object.style.zIndex = "";
+                    object.style.left = "";
+                    object.style.top = "";
+                    object.style.height = "";
+                    object.style.width = "";
+                    object.style.transform = "";
+                    object.style.borderRadius = "";
+                    object.style.border = "";
+                    vollbild_div.style.display = "";
+                } else {
+                    vollbild = 1;
+                    document.body.style.overflow = "hidden";
+                    object.style.position = "fixed";
+                    object.style.zIndex = "30";
+                    object.style.left = "50%";
+                    object.style.top = "50%";
+                    object.style.height = "100%";
+                    object.style.width = (screen_height * scale) + "px";
+                    object.style.transform = "translate(-50%, -50%)";
+                    object.style.borderRadius = "0px";
+                    object.style.border = "0px";
+                    vollbild_div.style.display = "block";
+                    vollbild_id = id;
+                }
+            }
+
+            async function alles_downloaden() {
+                herunterladen_button.style.display = "none";
+                await download_ordner();
+                setTimeout(() => {
+                    herunterladen_button.style.display = "";
+                }, 60000);
+            }
+            async function download_ordner() {
+                messageDiv.textContent = "Zip wird bereitgestellt.";
+                fetch('/download',{
+                    method: 'GET',
+                    headers:{
+                        key: "server_connection01",
+                        key1: user_key,
+                    }
+                    })
+                .then(response => response.blob())
+                .then(blob => {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.style.display = 'none';
+                    a.href = url;
+                    a.download = 'archive.zip';
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    messageDiv.textContent = "Zip wird heruntergeladen...";
+                })
+                .catch(error => console.error('Error downloading the file:', error));
+            }
+    </script>
+    <script id="service_worker">
+    </script>
+</body>
+</html>
